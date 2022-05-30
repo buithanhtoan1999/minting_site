@@ -7,7 +7,7 @@ pub use cw721_base::{MintMsg, MinterResponse};
 use astro_nft::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use astro_nft::state::AstroNFTContract;
 
-use crate::execute::{execute_freeze, execute_mint, execute_set_minter, execute_update, execute_sweep};
+use crate::execute::{execute_mint, execute_set_minter, execute_update};
 
 use crate::query::{query_config, query_frozen};
 use crate::state::{Config, CONFIG};
@@ -43,8 +43,6 @@ pub fn execute(
             token_uri,
             extension,
         } => execute_update(deps, env, info, token_id, token_uri, extension),
-        // Freeze token metadata
-        ExecuteMsg::Freeze {} => execute_freeze(deps, env, info),
 
         // Destroys the NFT permanently.
         ExecuteMsg::Burn { token_id } => execute_burn(deps, env, info, token_id),
@@ -54,9 +52,6 @@ pub fn execute(
 
         // Set minter
         ExecuteMsg::SetMinter { minter } => execute_set_minter(deps, env, info, minter),
-
-        //Sweep Tokens
-        ExecuteMsg::Sweep {denom} => execute_sweep(deps, env, info, denom),
 
         // CW721 methods
         _ => AstroNFTContract::default()

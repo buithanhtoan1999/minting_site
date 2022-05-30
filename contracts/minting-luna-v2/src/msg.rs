@@ -4,9 +4,8 @@ use cw721_base::Extension;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, Coin};
-use cw_storage_plus::{Item, Map, U8Key};
-use crate::state::{Stage};
+use cosmwasm_std::{Addr, Coin, Uint128};
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub owner: Option<String>,
@@ -19,7 +18,7 @@ pub struct InstantiateMsg {
     //collection symbol 
     pub collection_symbol: String,
     //Price of nft for minting
-    pub minting_stages: Vec<Stage>,
+    pub fee: Uint128
 
 }
 
@@ -31,15 +30,11 @@ pub enum ExecuteMsg {
         /// but owner cannot register new stages.
         new_owner: Option<String>,
     },
-    AddToWhiteList {
-        add_to_whitelists: Vec<String>,
-        stage_id: u8,
+    AddWhiteList {
+        whitelists: Vec<WhitelistInfo>
+        
     },
-    AddTokenIds{
-        token_ids: Vec<String>,
-    },
-
-    RandomMint {},
+    Mint {},
 
 }
 
@@ -47,6 +42,12 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Config {},
-    Whitelist {address: String, stage_id: u8},
-    TokenIdsList{}
+    Whitelists {address : String},
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct WhitelistInfo {
+    pub owner: String,
+    pub token_id: String
+
 }

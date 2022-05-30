@@ -1,9 +1,8 @@
-use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response, BankMsg, Coin, CosmosMsg, Uint128};
+use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response};
 
 use cw721_base::state::TokenInfo;
 use cw721_base::MintMsg;
 use astro_nft::state::{Extension, AstroNFTContract};
-use terraswap::querier::query_balance;
 
 use crate::error::ContractError;
 use crate::state::{Config, CONFIG};
@@ -106,27 +105,6 @@ pub fn execute_update(
         .add_attribute("token_id", token_id))
 }
 
-pub fn execute_freeze(
-    deps: DepsMut,
-    _env: Env,
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
-    let cw721_contract = AstroNFTContract::default();
-    let minter = cw721_contract.minter.load(deps.storage)?;
-    if info.sender != minter {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    CONFIG.update(
-        deps.storage,
-        |mut config| -> Result<Config, ContractError> {
-            config.frozen = true;
-            Ok(config)
-        },
-    )?;
-
-    Ok(Response::new().add_attribute("action", "freeze"))
-}
 
 pub fn execute_mint(
     deps: DepsMut,
@@ -167,28 +145,4 @@ pub fn execute_set_minter(
 }
 
 
-pub fn execute_sweep(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    denom: String,
-) -> Result<Response, ContractError> {
-    let cw721_contract = AstroNFTContract::default();
-    let minter = cw721_contract.minter.load(deps.storage)?;
-
-    if info.sender != minter {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    let amount = query_balance(&deps.querier, env.contract.address, denom.clone())?;
-    if amount.is_zero() {
-        return Err(ContractError::NoFunds {});
-    }
-    Ok(Response::new()
-        .add_attribute("sweep", denom.clone())
-        .add_message(CosmosMsg::Bank(BankMsg::Send {
-            to_address: info.sender.to_string(),
-            amount: vec![Coin { denom, amount }],
-        })))
-}
 

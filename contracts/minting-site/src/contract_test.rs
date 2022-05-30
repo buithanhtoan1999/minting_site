@@ -275,5 +275,4 @@ fn random_mint() {
         )
         .unwrap();
 
-        
 }
